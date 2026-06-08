@@ -62,3 +62,14 @@ This project extends the Digital Twin methodology from my M.Sc. thesis — *"The
 ## Author
 **Yasir Ahmed** — M.Sc. Computer Engineering, University of Verona  
 [LinkedIn](https://linkedin.com/in/yasirjumani) • [GitHub](https://github.com/yasirjumani)
+
+## Visualizations
+
+### Sensor Streams with Ground Truth Anomalies
+![Sensor Streams](results/sensor_streams.png)
+
+### Anomaly Detection Results
+![Anomaly Scores](results/anomaly_scores.png)
+
+### Model Comparison
+![Model Comparison](results/model_comparison.png)
