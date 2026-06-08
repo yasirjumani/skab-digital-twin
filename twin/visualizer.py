@@ -51,7 +51,7 @@ def plot_anomaly_scores(df, scores):
 def plot_comparison(metrics_baseline, metrics_upgraded):
     labels = ["Precision", "Recall", "F1-Score"]
     x = range(len(labels))
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 7))
     bars1 = ax.bar([i - 0.2 for i in x], metrics_baseline, 0.35,
                    label="Baseline (raw features)", color="steelblue", alpha=0.85)
     bars2 = ax.bar([i + 0.2 for i in x], metrics_upgraded, 0.35,
@@ -63,15 +63,19 @@ def plot_comparison(metrics_baseline, metrics_upgraded):
     ax.set_xticklabels(labels, fontsize=12)
     ax.set_ylim(0, 1.15)
     ax.set_ylabel("Score", fontsize=12)
-    ax.set_title("Baseline vs Rolling Window Feature Engineering\n"
-                 "Rolling Window achieves 0.96 Recall — catches 96% of all anomalies",
-                 fontweight="bold", fontsize=12)
-    ax.legend(fontsize=11)
+    p_up = metrics_upgraded[0]
+    r_up = metrics_upgraded[1]
+    f_up = metrics_upgraded[2]
+    ax.set_title(
+        f"Baseline vs Rolling Window Feature Engineering\n"
+        f"Rolling Window: Precision {p_up:.2f} | Recall {r_up:.2f} | F1 {f_up:.2f}",
+        fontweight="bold", fontsize=12)
+    ax.legend(fontsize=11, loc="upper left")
     ax.grid(True, alpha=0.3, axis="y")
-    ax.annotate("Safety-critical insight:\nHigh recall = fewer missed faults",
-                xy=(1.2, 0.96), fontsize=9, color="purple",
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="lavender", alpha=0.8))
-    plt.tight_layout()
+    fig.text(0.5, 0.01,
+             "Safety-critical insight: In industrial monitoring, high recall = fewer missed faults",
+             ha="center", fontsize=10, color="purple", style="italic")
+    plt.tight_layout(rect=[0, 0.04, 1, 1])
     path = f"{RESULTS_DIR}/model_comparison.png"
     plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
