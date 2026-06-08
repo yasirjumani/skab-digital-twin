@@ -1,7 +1,3 @@
-# ============================================================
-# SKAB Digital Twin — Central Configuration
-# ============================================================
-
 DATA_PATH = "data/other/1.csv"
 SEPARATOR = ";"
 DATETIME_COL = "datetime"
@@ -18,23 +14,11 @@ FEATURES = [
 ]
 
 TARGET = "anomaly"
-
-# Feature engineering
 WINDOW_SIZE = 5
-
-# Isolation Forest
-CONTAMINATION = 0.08
-N_ESTIMATORS = 150
+CONTAMINATION = 0.12
+N_ESTIMATORS = 200
 RANDOM_STATE = 42
-
-# Statistical Process Control
-Z_THRESHOLD = 2.0
-
-# Ensemble debouncing
-DEBOUNCE_SIZE = 3
-
-# Calibration split
+Z_THRESHOLD = 1.5
+DEBOUNCE_SIZE = 1
 CALIBRATION_ROWS = 200
-
-# Output paths
 RESULTS_DIR = "results"
