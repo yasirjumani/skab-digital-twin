@@ -1,14 +1,17 @@
 SKAB Digital Twin — Evaluation Report
 =============================================
 
-Baseline     — P: 0.67  R: 0.60  F1: 0.63
-Rolling Win  — P: 0.72  R: 0.73  F1: 0.73
+Threshold selection: validation set (no leakage)
+Split — train: 200  val: 272  test: 273
+
+Baseline     — P: 0.71  R: 0.99  F1: 0.83
+Rolling Win  — P: 0.72  R: 0.97  F1: 0.83
 
               precision    recall  f1-score   support
 
-           0       0.86      0.85      0.86       357
-           1       0.72      0.73      0.73       188
+           0       0.70      0.16      0.27        85
+           1       0.72      0.97      0.83       188
 
-    accuracy                           0.81       545
-   macro avg       0.79      0.79      0.79       545
-weighted avg       0.81      0.81      0.81       545
+    accuracy                           0.72       273
+   macro avg       0.71      0.57      0.55       273
+weighted avg       0.71      0.72      0.65       273
