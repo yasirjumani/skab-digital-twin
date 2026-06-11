@@ -1,31 +1,35 @@
 # Streaming Digital Twin Simulation Framework (DTSF)
 
-This project implements a streaming digital twin simulation framework for validating stateful prognostic machine learning pipelines. The system is designed for architectural correctness in streaming ML systems, rather than physical deployment or cyber-physical integration.
+This project implements a two-process streaming simulation system for validating stateful prognostic machine learning pipelines using synthetic telemetry replay.
 
 ---
 
-## 🏗️ System Architecture
-
-The framework is organized as a layered streaming pipeline:
+## 🏗️ Actual System Architecture (Implementation-Level View)
 
 ```mermaid
 graph LR
 
-    subgraph "Data Emulation Layer"
-        DS["SKAB Dataset<br/>Replay Source"] --> SE["Telemetry Producer<br/>HTTP Gateway"]
+    subgraph "Process 1: Telemetry Emulator (FastAPI Server)"
+        CSV[SKAB Dataset CSV] --> API[sensor_server.py\nFastAPI Gateway]
+        API --> ENDPOINT[/telemetry/{tick_id}\nHTTP JSON Response]
     end
 
-    subgraph "Streaming Orchestration Layer"
-        SE -- "Sequential Event Stream<br/>(Tick-Based Ingestion)" --> SC["Stream Controller<br/>Event Loop / Scheduler"]
+    subgraph "Network Layer (Simulated IIoT Link)"
+        ENDPOINT --> HTTP[HTTP Polling Interface\nrequests.get()]
     end
 
-    subgraph "Stateful Processing Layer"
-        SC --> SB["Temporal Sliding Window<br/>State Buffer"]
-        SB --> FE["Feature Engineering<br/>(Mean, Std, Delta)"]
-        FE --> INF["Anomaly Detection Model<br/>(e.g., Isolation Forest)"]
+    subgraph "Process 2: Streaming Inference Engine"
+        HTTP --> LOOP[run_pipeline.py\nInfinite Event Loop]
+
+        LOOP --> BUF[deque Sliding Window\nState Memory]
+        BUF --> FE[Real-time Feature Engineering\n(mean, std, diff)]
+
+        FE --> MODEL[Isolation Forest\nAnomaly Detection]
+        MODEL --> STATE[SKABAssetTwin\nHealth State Tracker]
+
+        STATE --> DASH[Console + Streamlit Dashboard]
     end
 
-    subgraph "Decision Layer"
-        INF --> HI["Prognostic Health Index<br/>Computation"]
-        HI --> UI["Streamlit Dashboard<br/>Monitoring Interface"]
-    end
+    style API fill:#e1f5fe,stroke:#01579b
+    style LOOP fill:#f3e5f5,stroke:#6a1b9a
+    style MODEL fill:#fff3e0,stroke:#e65100
