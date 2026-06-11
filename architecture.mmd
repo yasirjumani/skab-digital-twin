@@ -1,0 +1,9 @@
+graph LR
+    A[1. Industrial Asset<br/>Source: SKAB Dataset] -->|Telemetry allow| B[2. FastAPI Gateway<br/>HTTP Producer]
+    B -->|Telemetry Stream| C{3. State and<br/>Inference Engine<br/>Decision Layer}
+    C -->|a. Processing Logic| D[Stateful Buffer<br/>deque & Feature Engine]
+    D --> E[Prognostic Model<br/>Isolation Forest]
+    C -->|b. Prediction Logic| F[4. Normalized Health Index<br/>& Decision Support]
+
+    style C fill:#fff5ee,stroke:#663399,stroke-width:2px
+    style F fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
