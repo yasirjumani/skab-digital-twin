@@ -4,20 +4,19 @@ A research-grade framework for validating stateful prognostic machine learning p
 
 ---
 
-## 🚀 Engineering Evolution (Academic → Industrial)
-This framework evolved from a static, monolithic notebook analysis into a production-ready system by focusing on three core engineering pillars:
+## 🚀 Engineering Evolution: Academic to Industrial
+This framework evolved from a static, monolithic notebook analysis into a production-ready system by focusing on four core engineering pillars:
 
-* **From Batch to Streaming:** Migrated from offline batch processing to a real-time event-driven architecture.
-* **Process Decoupling:** Implemented a two-process architecture (Producer/Consumer) using REST protocols, mimicking real-world edge-to-cloud telemetry ingestion.
-* **Stateful Resilience:** Replaced stateless operations with a stateful sliding-window buffer (`collections.deque`), allowing for $O(1)$ complexity updates and real-time temporal feature extraction.
-* **Prognostic Fidelity:** Shifted from binary anomaly detection to a continuous, normalized **Health Index (HI)**, providing meaningful degradation trends for predictive maintenance.
+* **From Batch to Streaming:** Transitioned from offline static batch processing to a real-time, event-driven architecture.
+* **Service Decoupling:** Implemented a dual-process architecture (Producer/Consumer) using REST protocols, mimicking real-world edge-to-cloud telemetry ingestion.
+* **Stateful Resilience:** Replaced stateless operations with a stateful sliding-window buffer using `collections.deque`, enabling $O(1)$ complexity updates and real-time feature extraction.
+* **Prognostic Fidelity:** Shifted from binary anomaly labels to a continuous, normalized **Health Index (HI)**, facilitating trend-based predictive maintenance.
 
 ---
 
 ## 🏗️ Technical Architecture
-We define our system through two complementary models:
 
-### 1. System Conceptual Model (The Pattern)
+### 1. System Conceptual Model
 | Layer | Responsibility | Mechanism |
 | :--- | :--- | :--- |
 | **Data Emulation** | Telemetry source replay | Stateless HTTP Gateway |
@@ -25,8 +24,9 @@ We define our system through two complementary models:
 | **Stateful Processing** | Temporal context preservation | Sliding Window (`deque`) |
 | **Decision Layer** | Health Index (HI) derivation | Anomaly Scoring -> Normalization |
 
-### 2. Implementation Specification (The Reality)
-The system operates as a decoupled, two-process simulation.
+### 2. Implementation Specification
+The system is engineered as a decoupled, two-process simulation.
+
 ```mermaid
 graph LR
     subgraph "Producer Process (FastAPI)"
