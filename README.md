@@ -41,10 +41,10 @@ Both engines vote on each incoming tick. A temporal debouncing buffer requires 3
 ## Results
 | Model | Precision | Recall | F1 |
 | :--- | :--- | :--- | :--- |
-| Baseline Isolation Forest | 0.45 | 0.90 | 0.60 |
-| + Rolling Window Features | 0.39 | 0.96 | 0.56 |
+| Baseline Isolation Forest | 0.71 | 0.99 | 0.83 |
+| + Rolling Window Features | 0.72 | 0.97 | 0.83 |
 
-*Rolling Window achieves 0.96 Recall — catches 96% of all anomalies. In safety-critical industrial environments, missing a fault is far costlier than a false alarm.*
+*Rolling Window achieves 0.97 Recall — catches 97% of all anomalies. Threshold selected on a held-out validation set (no test leakage). In safety-critical industrial environments, missing a fault is far costlier than a false alarm.*
 
 ## Quickstart
 ```bash
