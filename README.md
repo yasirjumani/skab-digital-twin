@@ -4,19 +4,6 @@ This project implements a streaming digital twin simulation framework for valida
 
 ---
 
-## 🧠 Key Idea
-
-DTSF simulates how industrial digital twin pipelines operate by reproducing:
-
-- Event-driven telemetry streaming
-- Stateful time-series processing
-- Real-time feature extraction
-- Online anomaly detection and prognostic health estimation
-
-It is a **simulation-first architecture** used to validate streaming ML system design patterns.
-
----
-
 ## 🏗️ System Architecture
 
 The framework is organized as a layered streaming pipeline:
@@ -25,20 +12,20 @@ The framework is organized as a layered streaming pipeline:
 graph LR
 
     subgraph "Data Emulation Layer"
-        DS[SKAB Dataset\nReplay Source] --> SE[Telemetry Producer\nHTTP Gateway]
+        DS["SKAB Dataset<br/>Replay Source"] --> SE["Telemetry Producer<br/>HTTP Gateway"]
     end
 
     subgraph "Streaming Orchestration Layer"
-        SE -- "Sequential Event Stream\n(Tick-Based Ingestion)" --> SC[Stream Controller\nEvent Loop / Scheduler]
+        SE -- "Sequential Event Stream<br/>(Tick-Based Ingestion)" --> SC["Stream Controller<br/>Event Loop / Scheduler"]
     end
 
     subgraph "Stateful Processing Layer"
-        SC --> SB[Temporal Sliding Window\nState Buffer]
-        SB --> FE[Feature Engineering\n(Mean, Std, Delta)]
-        FE --> INF[Anomaly Detection Model\n(e.g., Isolation Forest)]
+        SC --> SB["Temporal Sliding Window<br/>State Buffer"]
+        SB --> FE["Feature Engineering<br/>(Mean, Std, Delta)"]
+        FE --> INF["Anomaly Detection Model<br/>(e.g., Isolation Forest)"]
     end
 
     subgraph "Decision Layer"
-        INF --> HI[Prognostic Health Index\nComputation]
-        HI --> UI[Streamlit Dashboard\nMonitoring Interface]
+        INF --> HI["Prognostic Health Index<br/>Computation"]
+        HI --> UI["Streamlit Dashboard<br/>Monitoring Interface"]
     end
