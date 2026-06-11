@@ -4,7 +4,7 @@ A research-grade framework for validating stateful prognostic machine learning p
 
 ---
 
-## 🚀 Engineering Evolution: Academic to Industrial
+## 🚀 Engineering Evolution (Academic → Industrial)
 This framework evolved from a static, monolithic notebook analysis into a production-ready system by focusing on four core engineering pillars:
 
 * **From Batch to Streaming:** Transitioned from offline static batch processing to a real-time, event-driven architecture.
