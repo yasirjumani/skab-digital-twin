@@ -1,32 +1,30 @@
 # Streaming Digital Twin Simulation Framework (DTSF)
 
-This project implements a two-process streaming simulation system for validating stateful prognostic machine learning pipelines using synthetic telemetry replay.
+A research-grade simulation framework for validating stateful prognostic machine learning pipelines. This project focuses on the architectural decoupling of data emulation and streaming inference.
 
 ---
 
-## 🏗️ Actual System Architecture (Implementation-Level View)
+## 🏗️ Architectural Overview
+We employ a tiered hierarchy to separate concerns:
+1. **Data Emulation:** Provides raw telemetry via a stateless gateway.
+2. **Orchestration:** Manages the sequential flow of time-series events.
+3. **Stateful Processing:** Maintains temporal memory for predictive analysis.
+4. **Decision Layer:** Translates model outputs into actionable health metrics.
 
 ```mermaid
-graph LR
-
-    subgraph "Process 1: Telemetry Emulator (FastAPI Server)"
-        CSV["SKAB Dataset CSV"] --> API["sensor_server.py<br/>FastAPI Gateway"]
-        API --> ENDPOINT["/telemetry/{tick_id}<br/>HTTP JSON Response"]
+graph TD
+    subgraph L1 [Data Emulation Layer]
+        DS[SKAB Dataset] --> SE[Telemetry Producer]
     end
-
-    subgraph "Network Layer (Simulated IIoT Link)"
-        ENDPOINT --> HTTP["HTTP Polling Interface<br/>requests.get()"]
+    subgraph L2 [Streaming Orchestration Layer]
+        SE --> SC[Stream Controller]
     end
-
-    subgraph "Process 2: Streaming Inference Engine"
-        HTTP --> LOOP["run_pipeline.py<br/>Infinite Event Loop"]
-        LOOP --> BUF["deque Sliding Window<br/>State Memory"]
-        BUF --> FE["Real-time Feature Engineering<br/>(mean, std, diff)"]
-        FE --> MODEL["Isolation Forest<br/>Anomaly Detection"]
-        MODEL --> STATE["SKABAssetTwin<br/>Health State Tracker"]
-        STATE --> DASH["Console + Streamlit Dashboard"]
+    subgraph L3 [Stateful Processing Layer]
+        SC --> SB[Temporal Sliding Window]
+        SB --> FE[Feature Engineering]
+        FE --> INF[Anomaly Detection Engine]
     end
-
-    style API fill:#e1f5fe,stroke:#01579b
-    style LOOP fill:#f3e5f5,stroke:#6a1b9a
-    style MODEL fill:#fff3e0,stroke:#e65100
+    subgraph L4 [Decision Layer]
+        INF --> HI[Prognostic Health Index]
+        HI --> UI[Streamlit Dashboard]
+    end
