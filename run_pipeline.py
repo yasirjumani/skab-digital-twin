@@ -1,70 +1,87 @@
 import time
-from collections import deque
-import pandas as pd
+import collections
 import numpy as np
-from twin.ingestion import load_data, get_stream
-from twin.features import get_feature_columns
-from twin.models import IsolationForestEngine, SPCEngine
-from twin.ensemble import EnsembleFusion
-from config import FEATURES, CALIBRATION_ROWS, WINDOW_SIZE
+import pandas as pd
+import config
+from twin_core.engine import SKABAssetTwin
+from sklearn.ensemble import IsolationForest
 
-def compute_live_features(window: deque) -> pd.DataFrame:
-    """Compute rolling features from the current tick window."""
-    buf = pd.DataFrame(list(window))
-    row = {}
-    for col in FEATURES:
-        row[col] = buf[col].iloc[-1]
-        row[f"{col}_mean"] = buf[col].mean()
-        row[f"{col}_std"] = buf[col].std() if len(buf) > 1 else 0.0
-        row[f"{col}_diff"] = buf[col].diff().iloc[-1] if len(buf) > 1 else 0.0
-    return pd.DataFrame([row])
+print("Initializing Stateful Streaming Simulator...")
 
-def run():
-    print("\n=== SKAB Digital Twin — Live Streaming Pipeline ===\n")
+# Load the CSV directly using the config path
+try:
+    df_raw = pd.read_csv(config.DATA_PATH, sep=';', parse_dates=['datetime'], index_col='datetime')
+except (ValueError, KeyError):
+    df_raw = pd.read_csv(config.DATA_PATH)
 
-    df = load_data()
-    feat_cols = get_feature_columns()
+drop_cols = ['datetime', 'anomaly', 'changepoint']
+sensor_cols = [col for col in df_raw.columns if col not in drop_cols]
 
-    # Train on calibration data (using pre-computed rolling features)
-    from twin.features import add_rolling_features
-    df_feat = add_rolling_features(df)
-    calib = df_feat.iloc[:CALIBRATION_ROWS]
+# Instantiate the digital twin state machine
+twin = SKABAssetTwin()
 
-    if_engine = IsolationForestEngine()
-    spc_engine = SPCEngine()
-    if_engine.fit(calib[feat_cols].fillna(0))
-    spc_engine.fit(calib)
+print("Calibrating baseline machine learning feature models...")
+base_model = IsolationForest(contamination=0.1, random_state=42)
 
-    fusion = EnsembleFusion()
+# Initialize the Stateful Stream Feature Queue matching your WINDOW_SIZE
+stream_buffer = collections.defaultdict(lambda: collections.deque(maxlen=config.WINDOW_SIZE))
 
-    # Seed the rolling window with the last WINDOW_SIZE calibration rows
-    seed_rows = df.iloc[CALIBRATION_ROWS - WINDOW_SIZE: CALIBRATION_ROWS]
-    window = deque(
-        [row[FEATURES].to_dict() for _, row in seed_rows.iterrows()],
-        maxlen=WINDOW_SIZE
-    )
+# Build temporary calibration data to prime the structure
+init_features = []
+for _, raw_row in df_raw.head(config.CALIBRATION_ROWS).iterrows():
+    tick_dict = raw_row[sensor_cols].to_dict()
+    processed_row_dict = {}
+    for col in sensor_cols:
+        processed_row_dict[col] = tick_dict[col]
+        processed_row_dict[f"{col}_mean"] = tick_dict[col]
+        processed_row_dict[f"{col}_std"] = 0.0
+        processed_row_dict[f"{col}_diff"] = 0.0
+    init_features.append(processed_row_dict)
 
-    print("\n📡 Streaming live sensor ticks...\n")
-    print(f"{'Timestamp':<22} | {'IF Score':>12} | State")
-    print("-" * 70)
+X_init = pd.DataFrame(init_features)
+base_model.fit(X_init)
 
-    for tick, timestamp, true_label in get_stream(df, start=CALIBRATION_ROWS, end=CALIBRATION_ROWS + 60):
-        window.append(tick)
-        X = compute_live_features(window)[feat_cols].fillna(0)
+print(f"Starting Stream Processing Loop (Window Size: {config.WINDOW_SIZE})...")
+print("-" * 80)
 
-        if_pred_arr, scores = if_engine.predict(X)
-        if_pred = int(if_pred_arr[0])
-        spc_pred = spc_engine.predict_tick(tick)
+# Simulate row-by-row live IoT data arrival
+for timestamp, raw_row in df_raw.iterrows():
+    tick_dict = raw_row[sensor_cols].to_dict()
+    processed_row_dict = {}
+    
+    # Dynamically compute rolling window metrics on the fly
+    for col in sensor_cols:
+        current_val = tick_dict[col]
+        stream_buffer[col].append(current_val)
+        
+        active_window = np.array(stream_buffer[col])
+        
+        processed_row_dict[col] = current_val
+        processed_row_dict[f"{col}_mean"] = np.mean(active_window)
+        processed_row_dict[f"{col}_std"] = np.std(active_window) if len(active_window) > 1 else 0.0
+        processed_row_dict[f"{col}_diff"] = current_val - active_window[-2] if len(active_window) > 1 else 0.0
 
-        state, level = fusion.evaluate(if_pred, spc_pred)
-        label = EnsembleFusion.state_label(state)
-        score = scores[0]
-
-        marker = " ← TRUE ANOMALY" if true_label == 1 else ""
-        print(f"{str(timestamp):<22} | {score:>+.6f} | {label}{marker}")
-        time.sleep(0.02)
-
-    print("\n[Pipeline] Stream complete.")
-
-if __name__ == "__main__":
-    run()
+    # Convert the processed tick dictionary into a unified Pandas DataFrame row
+    row_df = pd.DataFrame([processed_row_dict])
+    
+    # Wait until our rolling window buffer is fully primed before evaluating
+    if len(active_window) < config.WINDOW_SIZE:
+        continue
+        
+    # Generate the raw machine learning anomaly score required by your update method
+    raw_anomaly_score = base_model.decision_function(row_df)[0]
+    
+    # Pass BOTH required positional arguments (the feature series and the raw score)
+    twin.update(row_df.iloc[0], raw_anomaly_score)
+    
+    # Extract structural variables matched directly to your internal engine.py names
+    current_health = twin.health_score
+    current_state = getattr(twin, 'current_state', getattr(twin, 'state', 'NOMINAL'))
+    current_ewma = getattr(twin, 'smooth_ewma_score', getattr(twin, 'ewma_score', raw_anomaly_score))
+    
+    # Output clean telemetry metrics directly to terminal logs
+    print(f"Timestamp: {timestamp} | Health: {current_health:.2f}% | "
+          f"EWMA: {current_ewma:.4f} | State: {current_state}")
+    
+    # Throttling tick delay for realistic simulation playback speed
+    time.sleep(0.1)
