@@ -44,3 +44,11 @@ graph LR
         MOD --> HI["Health State Tracker"]
     end
 
+
+---
+
+## 🛠️ Prerequisites
+- Python 3.9+
+- Install dependencies:
+  ```bash
+  pip install -r requirements.txt
