@@ -1,37 +1,44 @@
 # Streaming Digital Twin Simulation Framework (DTSF)
 
-This project focuses on architectural correctness of streaming ML systems rather than physical system fidelity or industrial deployment.
-
-A modular, event-driven emulation environment for streaming prognostic health monitoring (PHM) and anomaly detection in industrial assets. This project provides a robust, decoupled architecture for simulating telemetry pipelines and validating streaming ML workflows.
+This project implements a streaming digital twin simulation framework for validating stateful prognostic machine learning pipelines. The system is designed for architectural correctness in streaming ML systems, rather than physical deployment or cyber-physical integration.
 
 ---
 
-## 🏗️ Architectural Overview
-The system is built on a **Producer-Consumer microservice pattern**, designed to emulate the separation between physical IoT edge devices and back-end analytics engines.
+## 🧠 Key Idea
 
-* **IIoT Gateway (Producer):** A decoupled API service that transforms static datasets (e.g., SKAB) into asynchronous, event-driven telemetry streams.
-* **Stateful Inference Pipeline (Consumer):** An autonomous engine that maintains local temporal context via sliding window buffers, performing real-time inference on incoming sensor packets.
+DTSF simulates how industrial digital twin pipelines operate by reproducing:
 
-## 🛠️ Engineering Highlights
-* **Streaming ML Workflow:** Implements online inference over sequential event ingestion using rolling statistical feature windows (mean, std, diff) to provide temporal context for time-series modeling.
-* **Decoupled Architecture:** Simulates IoT-style separation between telemetry generation and inference using a network-style API interface.
-* **Heuristic Prognostic Health Modeling:** Maps anomaly scores to a normalized health index to simulate degradation behavior in industrial assets.
-* **Modular Pipeline Design:** Separates ingestion, feature engineering, state management, and inference into independent components with a non-blocking visualization layer.
+- Event-driven telemetry streaming
+- Stateful time-series processing
+- Real-time feature extraction
+- Online anomaly detection and prognostic health estimation
 
-## System Model
-The framework employs a **Decoupled Sequential Inference** model:
-* **Ingestion:** Data is ingested via a REST API, emulating the transmission of telemetry from a physical edge device to a gateway.
-* **Feature Engineering:** Features are computed on a sliding temporal buffer, preserving local sequential dependency.
-* **Inference:** A pre-fitted anomaly detection model is applied to the buffered state, producing a real-time anomaly score.
-* **Prognostics:** Anomaly scores are transformed into a normalized health index, representing the asset's degradation trajectory.
+It is a **simulation-first architecture** used to validate streaming ML system design patterns.
 
-## 📋 Technical Scope
-This framework is designed as an architectural simulation environment for:
-* Streaming inference validation under sequential time-series inputs.
-* System design prototyping for decoupled telemetry and analytics pipelines.
-* Stateful ML pipeline experimentation for predictive maintenance logic.
+---
 
-**Non-goals:**
-* Real-time industrial deployment.
-* Physical sensor integration.
-* Physics-accurate system modeling.
+## 🏗️ System Architecture
+
+The framework is organized as a layered streaming pipeline:
+
+```mermaid
+graph LR
+
+    subgraph "Data Emulation Layer"
+        DS[SKAB Dataset\nReplay Source] --> SE[Telemetry Producer\nHTTP Gateway]
+    end
+
+    subgraph "Streaming Orchestration Layer"
+        SE -- "Sequential Event Stream\n(Tick-Based Ingestion)" --> SC[Stream Controller\nEvent Loop / Scheduler]
+    end
+
+    subgraph "Stateful Processing Layer"
+        SC --> SB[Temporal Sliding Window\nState Buffer]
+        SB --> FE[Feature Engineering\n(Mean, Std, Delta)]
+        FE --> INF[Anomaly Detection Model\n(e.g., Isolation Forest)]
+    end
+
+    subgraph "Decision Layer"
+        INF --> HI[Prognostic Health Index\nComputation]
+        HI --> UI[Streamlit Dashboard\nMonitoring Interface]
+    end
