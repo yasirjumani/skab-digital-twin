@@ -24,8 +24,12 @@ This framework evolved from a static, monolithic notebook analysis into a produc
 | **Stateful Processing** | Temporal context preservation | Sliding Window (`deque`) |
 | **Decision Layer** | Health Index (HI) derivation | Anomaly Scoring -> Normalization |
 
-### 2. Implementation Specification
-The system is engineered as a decoupled, two-process simulation.
+### 2. Execution Architecture
+The system operates as a distributed simulation, ensuring strict decoupling of concerns:
+
+* **Producer (Telemetry Server):** An independent FastAPI gateway that exposes raw sensor data via a REST interface.
+* **Consumer (Inference Engine):** A separate Python process (`run_pipeline.py`) that acts as an industrial client, actively polling the gateway via HTTP requests on **port 8000**.
+* **Simulation Fidelity:** By separating these processes, we emulate real-world IIoT deployments where telemetry generation occurs at the "edge," distinct from the analytical inference occurring in the cloud or at a centralized gateway.
 
 ```mermaid
 graph LR
@@ -39,3 +43,4 @@ graph LR
         FE --> MOD["Isolation Forest"]
         MOD --> HI["Health State Tracker"]
     end
+
